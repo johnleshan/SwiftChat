@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import type { Chat } from '@/lib/types';
-import { PhoneOff, VideoOff, Mic, MicOff } from 'lucide-react';
+import { PhoneOff, VideoOff, Mic, MicOff, Video } from 'lucide-react';
 
 interface VideoCallDialogProps {
   open: boolean;
@@ -110,7 +110,7 @@ export function VideoCallDialog({ open, onOpenChange, chat }: VideoCallDialogPro
                 {isMuted ? <MicOff /> : <Mic />}
             </Button>
             <Button variant={isCameraOff ? "destructive" : "outline"} size="icon" onClick={toggleCamera}>
-                {isCameraOff ? <VideoOff /> : <VideoOff className="text-transparent" />} 
+                {isCameraOff ? <VideoOff /> : <Video />}
             </Button>
             <Button variant="destructive" size="icon" onClick={handleHangUp}>
                 <PhoneOff />
