@@ -5,6 +5,8 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, Smile, Paperclip, Phone, Video } from 'lucide-react';
 import { format } from 'date-fns';
 import { suggestFocusMode, type SuggestFocusModeOutput } from '@/ai/flows/suggest-focus-mode';
+import { generateReply } from '@/ai/flows/generate-reply';
+import type { GenerateReplyInput } from '@/ai/types/generate-reply-types';
 
 import type { Chat, Message, User } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -53,6 +55,7 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
+    setIsLoading(true);
 
     const message: Message = {
       id: `msg-${Date.now()}`,
@@ -61,28 +64,58 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
       timestamp: Date.now(),
     };
 
-    setMessages(prev => [...prev, message]);
+    const updatedMessages = [...messages, message];
+    setMessages(updatedMessages);
     onSendMessage(chat.id, message);
     setNewMessage('');
+    
+    try {
+        const chatMembers = users.filter(u => chat.members.includes(u.id));
+        const otherChatMembers = chatMembers.filter(u => u.id !== currentUser.id);
 
-    if (chat.type === 'group') {
-      const updatedMessages = [...messages, message];
-      const aiInput = {
-        messages: updatedMessages.slice(-10).map(m => ({
-          sender: users.find(u => u.id === m.senderId)?.name || 'Unknown',
-          content: m.text,
-        })),
-      };
+        if(otherChatMembers.length > 0) {
+            const aiReply = await generateReply({
+                messages: updatedMessages.slice(-10).map(m => ({
+                    sender: users.find(u => u.id === m.senderId)?.name || 'Unknown',
+                    content: m.text,
+                })),
+                chatMembers,
+                currentUser,
+            });
 
-      try {
-        const result = await suggestFocusMode(aiInput);
-        if (result.shouldSuggestFocusMode) {
-          setSuggestion(result);
-          setShowFocusDialog(true);
+            if (aiReply.replyText && aiReply.replySenderId) {
+                const replyMessage: Message = {
+                    id: `msg-${Date.now() + 1}`,
+                    senderId: aiReply.replySenderId,
+                    text: aiReply.replyText,
+                    timestamp: Date.now() + 1,
+                };
+
+                setTimeout(() => {
+                  setMessages(prev => [...prev, replyMessage]);
+                  onSendMessage(chat.id, replyMessage);
+                }, 1000 + Math.random() * 1000);
+            }
         }
-      } catch (error) {
-        console.error("AI suggestion failed:", error);
-      }
+
+        if (chat.type === 'group') {
+            const aiInput = {
+                messages: updatedMessages.slice(-10).map(m => ({
+                    sender: users.find(u => u.id === m.senderId)?.name || 'Unknown',
+                    content: m.text,
+                })),
+            };
+
+            const result = await suggestFocusMode(aiInput);
+            if (result.shouldSuggestFocusMode) {
+                setSuggestion(result);
+                setShowFocusDialog(true);
+            }
+        }
+    } catch (error) {
+        console.error("AI processing failed:", error);
+    } finally {
+        setIsLoading(false);
     }
   };
   
