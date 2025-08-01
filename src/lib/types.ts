@@ -2,6 +2,7 @@ export interface User {
   id: string;
   name: string;
   avatarUrl?: string;
+  email?: string;
 }
 
 export interface Message {
@@ -12,7 +13,7 @@ export interface Message {
 }
 
 export interface Chat {
-  id: string;
+  id:string;
   type: 'dm' | 'group';
   name: string;
   members: string[];

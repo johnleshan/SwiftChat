@@ -1,11 +1,11 @@
 import type { User, Chat, Message } from '@/lib/types';
 
 export const users: User[] = [
-  { id: 'user-1', name: 'You', avatarUrl: 'https://placehold.co/40x40/FFD700/000000.png?text=You' },
-  { id: 'user-2', name: 'Alice', avatarUrl: 'https://placehold.co/40x40.png' , 'data-ai-hint': 'woman portrait' },
-  { id: 'user-3', name: 'Bob', avatarUrl: 'https://placehold.co/40x40.png', 'data-ai-hint': 'man portrait'  },
-  { id: 'user-4', name: 'Charlie', avatarUrl: 'https://placehold.co/40x40.png', 'data-ai-hint': 'person smiling'  },
-  { id: 'user-5', name: 'Diana', avatarUrl: 'https://placehold.co/40x40.png', 'data-ai-hint': 'woman profile'  },
+  { id: 'user-1', name: 'You', email: 'you@example.com', avatarUrl: 'https://placehold.co/40x40/FFD700/000000.png?text=You' },
+  { id: 'user-2', name: 'Alice', email: 'alice@example.com', avatarUrl: 'https://placehold.co/40x40.png' , 'data-ai-hint': 'woman portrait' },
+  { id: 'user-3', name: 'Bob', email: 'bob@example.com', avatarUrl: 'https://placehold.co/40x40.png', 'data-ai-hint': 'man portrait'  },
+  { id: 'user-4', name: 'Charlie', email: 'charlie@example.com', avatarUrl: 'https://placehold.co/40x40.png', 'data-ai-hint': 'person smiling'  },
+  { id: 'user-5', name: 'Diana', email: 'diana@example.com', avatarUrl: 'https://placehold.co/40x40.png', 'data-ai-hint': 'woman profile'  },
 ];
 
 export const chats: Chat[] = [

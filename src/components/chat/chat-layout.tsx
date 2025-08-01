@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SidebarProvider, Sidebar, SidebarInset } from '@/components/ui/sidebar';
-import { chats as initialChats, messages as allMessages, users, type Chat as ChatType, type Message, type User } from '@/lib/data';
+import { chats as initialChats, messages as allMessages, users as initialUsers, type Chat as ChatType, type Message, type User } from '@/lib/data';
 import { ChatSidebar } from './chat-sidebar';
 import { ChatWindow } from './chat-window';
 
@@ -11,11 +11,18 @@ export function ChatLayout() {
   const [chats, setChats] = useState(initialChats);
   const [messages, setMessages] = useState(allMessages);
   const [selectedChatId, setSelectedChatId] = useState<string>(initialChats[0].id);
+  const [users, setUsers] = useState(initialUsers);
 
   // In a real app, this would come from an auth context
   const currentUser = users.find(u => u.id === 'user-1') as User;
   
   const selectedChat = chats.find((c) => c.id === selectedChatId) as ChatType;
+
+  useEffect(() => {
+    // This effect can be used to listen to data changes and update the UI
+    // For now, we'll just log the current user when it changes.
+  }, [currentUser]);
+
 
   const handleSendMessage = (chatId: string, newMessage: Message) => {
     // Update messages for the specific chat

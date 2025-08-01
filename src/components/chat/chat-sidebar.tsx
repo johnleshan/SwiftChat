@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PlusCircle, Search, Settings, LogOut, MessageSquare } from "lucide-react";
+import { PlusCircle, Search, Settings, LogOut, MessageSquare, User as UserIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 import type { Chat, User } from "@/lib/types";
@@ -93,8 +93,18 @@ export function ChatSidebar({ chats, selectedChatId, onChatSelect, currentUser }
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end">
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/settings">
+                  <UserIcon className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                 <Link href="/settings">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link href="/login">
