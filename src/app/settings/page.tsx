@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Palette, User } from 'lucide-react';
+import { ArrowLeft, Palette, User, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -76,7 +76,7 @@ export default function SettingsPage() {
                       <Label>Avatar</Label>
                       <div className="flex items-center gap-4">
                         <UserAvatar user={currentUser} className="h-20 w-20" />
-                        <Button variant="outline">Change Avatar</Button>
+                        <Button variant="outline"><Camera />Change Avatar</Button>
                       </div>
                     </div>
                     <div className="space-y-2">
