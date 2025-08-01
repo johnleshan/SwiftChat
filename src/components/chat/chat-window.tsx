@@ -28,8 +28,13 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
   const [isLoading, setIsLoading] = useState(false);
   const [showFocusDialog, setShowFocusDialog] = useState(false);
   const [suggestion, setSuggestion] = useState<SuggestFocusModeOutput | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     // Scroll to bottom when messages change
@@ -118,9 +123,11 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
                       <p className="font-semibold text-sm mb-1 text-primary">{sender?.name}</p>
                     )}
                     <p className="text-base">{message.text}</p>
-                    <p className={cn("text-xs mt-1", isCurrentUser ? "text-primary-foreground/70" : "text-muted-foreground")}>
-                      {format(new Date(message.timestamp), 'p')}
-                    </p>
+                    {isMounted && (
+                      <p className={cn("text-xs mt-1", isCurrentUser ? "text-primary-foreground/70" : "text-muted-foreground")}>
+                        {format(new Date(message.timestamp), 'p')}
+                      </p>
+                    )}
                   </div>
                   {isCurrentUser && (
                     <div className="w-8 shrink-0">
