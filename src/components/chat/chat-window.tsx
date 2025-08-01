@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { UserAvatar } from './user-avatar';
 import { FocusModeDialog } from './focus-mode-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 interface ChatWindowProps {
   chat: Chat;
@@ -29,6 +30,7 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
   const [showFocusDialog, setShowFocusDialog] = useState(false);
   const [suggestion, setSuggestion] = useState<SuggestFocusModeOutput | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const { toast } = useToast();
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -84,6 +86,13 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
   
   const getSender = (senderId: string) => users.find(u => u.id === senderId);
 
+  const handleStartCall = () => {
+    toast({
+      title: 'Starting Call',
+      description: `Calling ${chat.name}...`,
+    });
+  };
+
   return (
     <div className="flex flex-col h-screen bg-card">
       <header className="flex items-center gap-4 border-b bg-background p-3">
@@ -95,7 +104,7 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
           </p>
         </div>
         <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon"><Phone /></Button>
+            <Button variant="ghost" size="icon" onClick={handleStartCall}><Phone /></Button>
             <Button variant="ghost" size="icon"><Video /></Button>
         </div>
       </header>
