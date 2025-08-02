@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   name: string;
@@ -10,6 +11,11 @@ export interface Message {
   senderId: string;
   text: string;
   timestamp: number;
+  attachment?: {
+    name: string;
+    type: string;
+    url: string;
+  };
 }
 
 export interface Chat {

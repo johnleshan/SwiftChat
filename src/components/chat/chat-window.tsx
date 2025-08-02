@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Smile, Paperclip, Phone, Video, XCircle } from 'lucide-react';
+import { Send, Smile, Paperclip, Phone, Video, XCircle, File as FileIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { suggestFocusMode, type SuggestFocusModeOutput } from '@/ai/flows/suggest-focus-mode';
 import { generateReply } from '@/ai/flows/generate-reply';
@@ -18,6 +18,7 @@ import { UserAvatar } from './user-avatar';
 import { FocusModeDialog } from './focus-mode-dialog';
 import { VideoCallDialog } from './video-call-dialog';
 import { useToast } from '@/hooks/use-toast';
+import Image from 'next/image';
 
 interface ChatWindowProps {
   chat: Chat;
@@ -160,20 +161,33 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // In a real app, you would upload the file to a server and then
-      // send a message with the file URL.
-      const message: Message = {
-        id: `msg-${Date.now()}`,
-        senderId: currentUser.id,
-        text: `Attached file: ${file.name}`,
-        timestamp: Date.now(),
+      const reader = new FileReader();
+      reader.onload = (loadEvent) => {
+        const fileUrl = loadEvent.target?.result as string;
+
+        const message: Message = {
+          id: `msg-${Date.now()}`,
+          senderId: currentUser.id,
+          text: '',
+          timestamp: Date.now(),
+          attachment: {
+            name: file.name,
+            type: file.type,
+            url: fileUrl,
+          },
+        };
+        setMessages(prev => [...prev, message]);
+        onSendMessage(chat.id, message);
+        toast({
+          title: 'File Attached',
+          description: `${file.name} has been sent.`,
+        });
       };
-      setMessages(prev => [...prev, message]);
-      onSendMessage(chat.id, message);
-      toast({
-        title: 'File Attached',
-        description: `${file.name} has been sent.`,
-      });
+      reader.readAsDataURL(file);
+    }
+     // Reset file input
+     if(fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
   
@@ -229,7 +243,32 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
                     {!isCurrentUser && showAvatar && (
                       <p className="font-semibold text-sm mb-1 text-primary">{sender?.name}</p>
                     )}
-                    <p className="text-base">{message.text}</p>
+                    {message.attachment ? (
+                      <div className="space-y-2">
+                        {message.attachment.type.startsWith('image/') ? (
+                          <Image 
+                            src={message.attachment.url} 
+                            alt={message.attachment.name} 
+                            width={200}
+                            height={200}
+                            className="rounded-md object-cover"
+                          />
+                        ) : (
+                          <a 
+                            href={message.attachment.url} 
+                            download={message.attachment.name}
+                            className="flex items-center gap-2 p-2 rounded-md bg-background/50 hover:bg-background/80"
+                          >
+                            <FileIcon className="h-6 w-6" />
+                            <span className="truncate">{message.attachment.name}</span>
+                          </a>
+                        )}
+                        {message.text && <p className="text-base">{message.text}</p>}
+                      </div>
+                    ) : (
+                      <p className="text-base">{message.text}</p>
+                    )}
+
                     {isMounted && (
                       <p className={cn("text-xs mt-1", isCurrentUser ? "text-primary-foreground/70" : "text-muted-foreground")}>
                         {format(new Date(message.timestamp), 'p')}
