@@ -40,6 +40,7 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
   const { toast } = useToast();
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -151,6 +152,30 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
       setShowFocusDialog(false);
     }
   };
+
+  const handleAttachmentClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // In a real app, you would upload the file to a server and then
+      // send a message with the file URL.
+      const message: Message = {
+        id: `msg-${Date.now()}`,
+        senderId: currentUser.id,
+        text: `Attached file: ${file.name}`,
+        timestamp: Date.now(),
+      };
+      setMessages(prev => [...prev, message]);
+      onSendMessage(chat.id, message);
+      toast({
+        title: 'File Attached',
+        description: `${file.name} has been sent.`,
+      });
+    }
+  };
   
   const filteredMessages = isFocusMode && focusedTopic
     ? messages.filter(message => message.text.toLowerCase().includes(focusedTopic.toLowerCase()))
@@ -231,7 +256,8 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
       <footer className="border-t bg-background p-3">
         <form onSubmit={handleSendMessage} className="flex items-center gap-3">
           <Button variant="ghost" size="icon"><Smile /></Button>
-          <Button variant="ghost" size="icon"><Paperclip /></Button>
+          <Button variant="ghost" size="icon" type="button" onClick={handleAttachmentClick}><Paperclip /></Button>
+          <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
           <Input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
