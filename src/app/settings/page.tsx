@@ -1,42 +1,19 @@
 
-'use client';
-
-import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Palette, User, Camera } from 'lucide-react';
+import { ArrowLeft, Palette, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserAvatar } from '@/components/chat/user-avatar';
-import { useToast } from '@/hooks/use-toast';
 import { users } from '@/lib/data';
-import { Switch } from '@/components/ui/switch';
+import { ProfileTabContent } from '@/components/settings/profile-tab-content';
+import { AppearanceTabContent } from '@/components/settings/appearance-tab-content';
 
 export default function SettingsPage() {
-  const { toast } = useToast();
-  const [currentUser, setCurrentUser] = useState(users.find(u => u.id === 'user-1'));
-  const [name, setName] = useState(currentUser?.name || '');
+  const currentUser = users.find(u => u.id === 'user-1');
 
   if (!currentUser) {
     return null;
   }
-
-  const handleProfileSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    setCurrentUser(prev => prev ? { ...prev, name } : prev);
-    // In a real app, you would also update the user in your backend
-    // and maybe update the users array in the data.ts for demo purposes
-    const userIndex = users.findIndex(u => u.id === currentUser.id);
-    if(userIndex !== -1) {
-      users[userIndex].name = name;
-    }
-    toast({
-      title: 'Success',
-      description: 'Your profile has been updated.',
-    });
-  };
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -71,24 +48,7 @@ export default function SettingsPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleProfileSave} className="space-y-6">
-                    <div className="space-y-2">
-                      <Label>Avatar</Label>
-                      <div className="flex items-center gap-4">
-                        <UserAvatar user={currentUser} className="h-20 w-20" />
-                        <Button variant="outline"><Camera />Change Avatar</Button>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Full Name</Label>
-                      <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" value={currentUser.email} disabled />
-                    </div>
-                    <Button type="submit">Save Changes</Button>
-                  </form>
+                  <ProfileTabContent user={currentUser} />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -101,22 +61,7 @@ export default function SettingsPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                        <Label>Theme</Label>
-                        <p className="text-sm text-muted-foreground">Select a theme for the application.</p>
-                        {/* In a real app, this would be implemented with a ThemeProvider */}
-                        <div className="flex items-center space-x-2 rounded-lg border p-4">
-                            <div className="flex-1 space-y-1">
-                                <p className="text-sm font-medium leading-none">
-                                    Dark Mode
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                    Enable dark theme across the app.
-                                </p>
-                            </div>
-                            <Switch id="dark-mode" />
-                        </div>
-                    </div>
+                  <AppearanceTabContent />
                 </CardContent>
               </Card>
             </TabsContent>
