@@ -19,6 +19,7 @@ import { FocusModeDialog } from './focus-mode-dialog';
 import { VideoCallDialog } from './video-call-dialog';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface ChatWindowProps {
   chat: Chat;
@@ -190,6 +191,10 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
       fileInputRef.current.value = '';
     }
   };
+
+  const handleEmojiClick = (emoji: string) => {
+    setNewMessage(prev => prev + emoji);
+  };
   
   const filteredMessages = isFocusMode && focusedTopic
     ? messages.filter(message => message.text.toLowerCase().includes(focusedTopic.toLowerCase()))
@@ -294,7 +299,18 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
 
       <footer className="border-t bg-background p-3">
         <form onSubmit={handleSendMessage} className="flex items-center gap-3">
-          <Button variant="ghost" size="icon"><Smile /></Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon"><Smile /></Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-2">
+              <div className="grid grid-cols-6 gap-2">
+                {['😀', '😂', '😍', '👍', '🤔', '🎉'].map(emoji => (
+                  <Button key={emoji} variant="ghost" size="icon" className="text-xl" onClick={() => handleEmojiClick(emoji)}>{emoji}</Button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
           <Button variant="ghost" size="icon" type="button" onClick={handleAttachmentClick}><Paperclip /></Button>
           <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
           <Input
