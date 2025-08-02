@@ -174,31 +174,34 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (loadEvent) => {
-        const fileUrl = loadEvent.target?.result as string;
+    const files = event.target.files;
+    if (files) {
+      for (const file of Array.from(files)) {
+        const reader = new FileReader();
+        reader.onload = (loadEvent) => {
+          const fileUrl = loadEvent.target?.result as string;
 
-        const message: Message = {
-          id: `msg-${Date.now()}`,
-          senderId: currentUser.id,
-          text: '',
-          timestamp: Date.now(),
-          attachment: {
-            name: file.name,
-            type: file.type,
-            url: fileUrl,
-          },
+          const message: Message = {
+            id: `msg-${Date.now()}-${file.name}`,
+            senderId: currentUser.id,
+            text: '',
+            timestamp: Date.now(),
+            attachment: {
+              name: file.name,
+              type: file.type,
+              url: fileUrl,
+            },
+          };
+          setMessages(prev => [...prev, message]);
+          onSendMessage(chat.id, message);
         };
-        setMessages(prev => [...prev, message]);
-        onSendMessage(chat.id, message);
-        toast({
-          title: 'File Attached',
-          description: `${file.name} has been sent.`,
-        });
-      };
-      reader.readAsDataURL(file);
+        reader.readAsDataURL(file);
+      }
+      
+      toast({
+        title: 'File(s) Attached',
+        description: `${files.length} file(s) have been sent.`,
+      });
     }
      // Reset file input
      if(fileInputRef.current) {
@@ -339,7 +342,7 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
             </PopoverContent>
           </Popover>
           <Button variant="ghost" size="icon" type="button" onClick={handleAttachmentClick}><Paperclip /></Button>
-          <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+          <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" multiple />
           <Input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
