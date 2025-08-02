@@ -199,8 +199,7 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
       }
       
       toast({
-        title: 'File(s) Attached',
-        description: `${files.length} file(s) have been sent.`,
+        title: `${files.length} file(s) sent.`,
       });
     }
      // Reset file input
