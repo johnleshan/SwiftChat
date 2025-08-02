@@ -21,7 +21,7 @@ const prompt = ai.definePrompt({
 
   Here is the context for your response:
   - The user who is expecting a reply is: {{{currentUser.name}}}
-  - The other users in the chat are: {{#each chatMembers}}{{#unless (eq this.id currentUser.id)}}{{this.name}} (id: {{this.id}}), {{/unless}}{{/each}}.
+  - The other users in the chat are: {{#each chatMembers}}{{this.name}} (id: {{this.id}}), {{/each}}.
   - The recent chat history is:
   {{#each messages}}
   {{this.sender}}: {{this.content}}
@@ -29,7 +29,7 @@ const prompt = ai.definePrompt({
 
   Your task is to:
   1.  Analyze the recent messages to understand the conversation's context.
-  2.  Choose one of the *other* users (not {{{currentUser.name}}}) to send the next reply.
+  2.  Choose one of the *other* users (from the provided list of other users) to send the next reply.
   3.  Generate a short, realistic, and relevant reply from the perspective of the chosen user. The reply should be in a conversational style.
   4.  Set the 'replySenderId' to the ID of the user you chose to reply as.
   5.  Set the 'replyText' to the message content.
@@ -45,7 +45,13 @@ const generateReplyFlow = ai.defineFlow(
     outputSchema: GenerateReplyOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
+    // Filter out the current user from the chat members list before passing to the prompt.
+    const otherChatMembers = input.chatMembers.filter(member => member.id !== input.currentUser.id);
+    
+    const { output } = await prompt({
+      ...input,
+      chatMembers: otherChatMembers,
+    });
     return output!;
   }
 );
