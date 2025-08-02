@@ -1,3 +1,7 @@
+
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from "next/link";
 import { PlusCircle, Search, Settings, LogOut, MessageSquare, User as UserIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -31,6 +35,11 @@ interface ChatSidebarProps {
 
 export function ChatSidebar({ chats, selectedChatId, onChatSelect, currentUser }: ChatSidebarProps) {
   const sortedChats = [...chats].sort((a, b) => b.lastMessageTimestamp - a.lastMessageTimestamp);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   
   return (
     <>
@@ -66,9 +75,11 @@ export function ChatSidebar({ chats, selectedChatId, onChatSelect, currentUser }
                     <p className={cn("font-semibold", selectedChatId === chat.id ? "text-primary" : "text-foreground")}>
                       {chat.name}
                     </p>
-                    <span className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(chat.lastMessageTimestamp), { addSuffix: true })}
-                    </span>
+                    {isMounted && (
+                      <span className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(chat.lastMessageTimestamp), { addSuffix: true })}
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center justify-between">
                     <p className="text-sm text-muted-foreground truncate">{chat.lastMessage}</p>
