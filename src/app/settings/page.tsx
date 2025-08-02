@@ -1,17 +1,16 @@
 
 import Link from 'next/link';
-import { ArrowLeft, Palette, User } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { users } from '@/lib/data';
-import { ProfileTabContent } from '@/components/settings/profile-tab-content';
-import { AppearanceTabContent } from '@/components/settings/appearance-tab-content';
+import type { User } from '@/lib/types';
+import { SettingsTabs } from '@/components/settings/settings-tabs';
 
 export default function SettingsPage() {
-  const currentUser = users.find(u => u.id === 'user-1');
+  const currentUser = users.find(u => u.id === 'user-1') as User;
 
   if (!currentUser) {
+    // Or a proper loading/error state
     return null;
   }
 
@@ -28,44 +27,7 @@ export default function SettingsPage() {
           <h1 className="text-xl font-headline font-bold text-primary">Settings</h1>
         </header>
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-          <Tabs defaultValue="profile">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="profile">
-                <User className="mr-2 h-4 w-4" />
-                Profile
-              </TabsTrigger>
-              <TabsTrigger value="appearance">
-                <Palette className="mr-2 h-4 w-4" />
-                Appearance
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="profile">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Profile</CardTitle>
-                  <CardDescription>
-                    Update your personal information here.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ProfileTabContent user={currentUser} />
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="appearance">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Appearance</CardTitle>
-                  <CardDescription>
-                    Customize the look and feel of the application.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <AppearanceTabContent />
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+          <SettingsTabs currentUser={currentUser} />
         </main>
       </div>
     </div>
