@@ -1,3 +1,4 @@
+
 import type { SuggestFocusModeOutput } from "@/ai/flows/suggest-focus-mode";
 import {
   AlertDialog,
@@ -15,9 +16,10 @@ interface FocusModeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   suggestion: SuggestFocusModeOutput;
+  onConfirm: () => void;
 }
 
-export function FocusModeDialog({ open, onOpenChange, suggestion }: FocusModeDialogProps) {
+export function FocusModeDialog({ open, onOpenChange, suggestion, onConfirm }: FocusModeDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -35,7 +37,7 @@ export function FocusModeDialog({ open, onOpenChange, suggestion }: FocusModeDia
         </AlertDialogHeader>
         <AlertDialogFooter className="sm:justify-center">
           <AlertDialogCancel>Not Now</AlertDialogCancel>
-          <AlertDialogAction>
+          <AlertDialogAction onClick={onConfirm}>
             <Zap className="mr-2 h-4 w-4" />
             Enter Focus Mode
           </AlertDialogAction>

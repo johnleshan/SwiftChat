@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Smile, Paperclip, Phone, Video } from 'lucide-react';
+import { Send, Smile, Paperclip, Phone, Video, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { suggestFocusMode, type SuggestFocusModeOutput } from '@/ai/flows/suggest-focus-mode';
 import { generateReply } from '@/ai/flows/generate-reply';
@@ -33,6 +33,9 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
   const [showFocusDialog, setShowFocusDialog] = useState(false);
   const [showVideoCall, setShowVideoCall] = useState(false);
   const [suggestion, setSuggestion] = useState<SuggestFocusModeOutput | null>(null);
+  const [lastSuggestedTopic, setLastSuggestedTopic] = useState<string | null>(null);
+  const [isFocusMode, setIsFocusMode] = useState(false);
+  const [focusedTopic, setFocusedTopic] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const { toast } = useToast();
 
@@ -50,7 +53,15 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
         viewport.scrollTop = viewport.scrollHeight;
       }
     }
-  }, [messages]);
+  }, [messages, isFocusMode]);
+
+    // Reset focus mode when chat changes
+  useEffect(() => {
+    setIsFocusMode(false);
+    setFocusedTopic(null);
+    setLastSuggestedTopic(null);
+  }, [chat.id]);
+
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,7 +109,7 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
             }
         }
 
-        if (chat.type === 'group') {
+        if (chat.type === 'group' && !isFocusMode) {
             const aiInput = {
                 messages: updatedMessages.slice(-10).map(m => ({
                     sender: users.find(u => u.id === m.senderId)?.name || 'Unknown',
@@ -107,9 +118,10 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
             };
 
             const result = await suggestFocusMode(aiInput);
-            if (result.shouldSuggestFocusMode) {
+            if (result.shouldSuggestFocusMode && result.suggestedTopic !== lastSuggestedTopic) {
                 setSuggestion(result);
                 setShowFocusDialog(true);
+                setLastSuggestedTopic(result.suggestedTopic);
             }
         }
     } catch (error) {
@@ -132,6 +144,18 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
     setShowVideoCall(true);
   };
 
+  const handleEnterFocusMode = () => {
+    if (suggestion) {
+      setIsFocusMode(true);
+      setFocusedTopic(suggestion.suggestedTopic);
+      setShowFocusDialog(false);
+    }
+  };
+  
+  const filteredMessages = isFocusMode && focusedTopic
+    ? messages.filter(message => message.text.toLowerCase().includes(focusedTopic.toLowerCase()))
+    : messages;
+
 
   return (
     <div className="flex flex-col h-screen bg-card">
@@ -149,13 +173,22 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
         </div>
       </header>
 
+      {isFocusMode && (
+        <div className="bg-accent text-accent-foreground p-2 flex items-center justify-center text-sm">
+          <span>Focusing on: <strong className="font-bold">{focusedTopic}</strong></span>
+          <Button variant="ghost" size="icon" className="h-6 w-6 ml-2" onClick={() => setIsFocusMode(false)}>
+            <XCircle className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
       <main className="flex-1 overflow-hidden">
         <ScrollArea className="h-full" ref={scrollAreaRef}>
           <div className="p-4 space-y-6">
-            {messages.map((message, index) => {
+            {filteredMessages.map((message, index) => {
               const sender = getSender(message.senderId);
               const isCurrentUser = message.senderId === currentUser.id;
-              const showAvatar = index === 0 || messages[index - 1].senderId !== message.senderId;
+              const showAvatar = index === 0 || filteredMessages[index - 1].senderId !== message.senderId;
               
               return (
                 <div key={message.id} className={cn("flex items-end gap-3", isCurrentUser && "justify-end")}>
@@ -186,6 +219,11 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
                 </div>
               );
             })}
+             {isFocusMode && filteredMessages.length === 0 && (
+              <div className="text-center text-muted-foreground mt-8">
+                No messages found for the topic "{focusedTopic}".
+              </div>
+            )}
           </div>
         </ScrollArea>
       </main>
@@ -211,6 +249,7 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
           open={showFocusDialog}
           onOpenChange={setShowFocusDialog}
           suggestion={suggestion}
+          onConfirm={handleEnterFocusMode}
         />
       )}
       <VideoCallDialog
