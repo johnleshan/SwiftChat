@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Smile, Paperclip, Phone, Video, XCircle, File as FileIcon } from 'lucide-react';
+import { Send, Smile, Paperclip, Phone, Video, XCircle, File as FileIcon, ChevronDown, ChevronUp } from 'lucide-react';
 import { format } from 'date-fns';
 import { suggestFocusMode, type SuggestFocusModeOutput } from '@/ai/flows/suggest-focus-mode';
 import { generateReply } from '@/ai/flows/generate-reply';
@@ -28,6 +28,17 @@ interface ChatWindowProps {
   onSendMessage: (chatId: string, message: Message) => void;
 }
 
+const allEmojis = [
+  '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰',
+  '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏',
+  '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠',
+  '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥',
+  '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐',
+  '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤',
+  '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '👍', '👎', '👌', '✌️',
+  '🤞', '🤟', '🤘', '🤙', '👋', '🤚', '🖐️', '✋', '🖖', '👏', '🙌', '🙏', '🎉', '🎊', '✨', '🔥'
+];
+
 export function ChatWindow({ chat, messages: initialMessages, currentUser, onSendMessage }: ChatWindowProps) {
   const [messages, setMessages] = useState(initialMessages);
   const [newMessage, setNewMessage] = useState('');
@@ -40,9 +51,12 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
   const [focusedTopic, setFocusedTopic] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const { toast } = useToast();
+  const [isEmojiPickerExpanded, setIsEmojiPickerExpanded] = useState(false);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const visibleEmojis = isEmojiPickerExpanded ? allEmojis : allEmojis.slice(0, 32);
 
   useEffect(() => {
     setIsMounted(true);
@@ -299,32 +313,28 @@ export function ChatWindow({ chat, messages: initialMessages, currentUser, onSen
 
       <footer className="border-t bg-background p-3">
         <form onSubmit={handleSendMessage} className="flex items-center gap-3">
-          <Popover>
+          <Popover onOpenChange={(open) => !open && setIsEmojiPickerExpanded(false)}>
             <PopoverTrigger asChild>
               <Button variant="ghost" size="icon"><Smile /></Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-2">
-              <div className="grid grid-cols-8 gap-1">
-                {[
-                  '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣',
-                  '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰',
-                  '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜',
-                  '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏',
-                  '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣',
-                  '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠',
-                  '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨',
-                  '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥',
-                  '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧',
-                  '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐',
-                  '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑',
-                  '🤠', '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤',
-                  '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗',
-                  '💖', '💘', '💝', '💟', '👍', '👎', '👌', '✌️',
-                  '🤞', '🤟', '🤘', '🤙', '👋', '🤚', '🖐️', '✋',
-                  '🖖', '👏', '🙌', '🙏', '🎉', '🎊', '✨', '🔥'
-                ].map(emoji => (
-                  <Button key={emoji} variant="ghost" size="icon" className="text-xl h-8 w-8" onClick={() => handleEmojiClick(emoji)}>{emoji}</Button>
-                ))}
+            <PopoverContent className={cn("w-auto p-2", isEmojiPickerExpanded && "w-[330px]")}>
+              <ScrollArea className={cn("h-auto", isEmojiPickerExpanded && "h-64")}>
+                <div className="grid grid-cols-8 gap-1">
+                  {visibleEmojis.map(emoji => (
+                    <Button key={emoji} variant="ghost" size="icon" className="text-xl h-8 w-8" onClick={() => handleEmojiClick(emoji)}>{emoji}</Button>
+                  ))}
+                </div>
+              </ScrollArea>
+              <div className="text-center mt-2">
+                <Button 
+                  variant="link" 
+                  size="sm" 
+                  onClick={() => setIsEmojiPickerExpanded(prev => !prev)}
+                  className="text-muted-foreground"
+                >
+                  {isEmojiPickerExpanded ? <ChevronUp className="mr-1 h-4 w-4" /> : <ChevronDown className="mr-1 h-4 w-4" />}
+                  {isEmojiPickerExpanded ? 'Less' : 'More'}
+                </Button>
               </div>
             </PopoverContent>
           </Popover>
