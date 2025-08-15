@@ -2,7 +2,7 @@
 
 SwiftChat is a modern, real-time instant messaging application built with Next.js and powered by AI. It provides a seamless and intuitive chatting experience with intelligent features designed to enhance user engagement and focus.
 
-![SwiftChat Mockup](assets/SwiftChat mockup.png)
+![SwiftChat Mockup](/home/user/studio/assets/SwiftChat mockup.png)
 
 ## ✨ Key Features
 
